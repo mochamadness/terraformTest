@@ -1,0 +1,97 @@
+trigger:
+  - main
+
+pr:
+  - main
+
+variables:
+  terraformVersion: "1.8.5"
+  devWorkingDirectory: "env/dev"
+  prodWorkingDirectory: "env/prod"
+
+stages:
+  - stage: Dev
+    displayName: Deploy dev
+    jobs:
+      - job: TerraformDev
+        displayName: Terraform dev
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - bash: |
+              set -euxo pipefail
+              curl -fsSLo /tmp/terraform.zip "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_amd64.zip"
+              rm -rf /tmp/terraform-bin
+              unzip -o /tmp/terraform.zip -d /tmp/terraform-bin
+              echo "##vso[task.prependpath]/tmp/terraform-bin"
+              terraform version
+            displayName: Install Terraform
+
+          - task: AzureCLI@2
+            displayName: Terraform plan dev
+            inputs:
+              azureSubscription: $(azureServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euxo pipefail
+                cd "$(System.DefaultWorkingDirectory)/$(devWorkingDirectory)"
+                terraform init -input=false
+                terraform validate
+                terraform plan -input=false -var-file="terraform.tfvars"
+
+          - task: AzureCLI@2
+            displayName: Terraform apply dev
+            inputs:
+              azureSubscription: $(azureServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euxo pipefail
+                cd "$(System.DefaultWorkingDirectory)/$(devWorkingDirectory)"
+                terraform init -input=false
+                terraform apply -input=false -auto-approve -var-file="terraform.tfvars"
+
+  - stage: Prod
+    displayName: Deploy prod
+    dependsOn: Dev
+    condition: succeeded()
+    jobs:
+      - job: TerraformProd
+        displayName: Terraform prod
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - bash: |
+              set -euxo pipefail
+              curl -fsSLo /tmp/terraform.zip "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_amd64.zip"
+              rm -rf /tmp/terraform-bin
+              unzip -o /tmp/terraform.zip -d /tmp/terraform-bin
+              echo "##vso[task.prependpath]/tmp/terraform-bin"
+              terraform version
+            displayName: Install Terraform
+
+          - task: AzureCLI@2
+            displayName: Terraform plan prod
+            inputs:
+              azureSubscription: $(azureServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euxo pipefail
+                cd "$(System.DefaultWorkingDirectory)/$(prodWorkingDirectory)"
+                terraform init -input=false
+                terraform validate
+                terraform plan -input=false -var-file="terraform.tfvars"
+
+          - task: AzureCLI@2
+            displayName: Terraform apply prod
+            inputs:
+              azureSubscription: $(azureServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euxo pipefail
+                cd "$(System.DefaultWorkingDirectory)/$(prodWorkingDirectory)"
+                terraform init -input=false
+                terraform apply -input=false -auto-approve -var-file="terraform.tfvars"
