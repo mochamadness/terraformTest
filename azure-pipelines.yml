@@ -3,7 +3,19 @@ trigger:
     include:
     - main
     - refs/tags/*
+
+resources:
+  repositories:
+  - repository: ReleaseRepo
+    type: github
+    endpoint: github.com_mochamadness_oauth
+    name: mochamadness/test-release
+    ref: main
+
 pool:
   vmImage: ubuntu-latest
+
 steps:
+- checkout: self
+- checkout: ReleaseRepo
 - script: echo $(Build.SourceBranch) $(Build.SourceVersion)
