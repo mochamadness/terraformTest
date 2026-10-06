@@ -104,3 +104,6 @@ for both environments.
 - No credentials, subscription secrets, or backend secrets are stored in this repository.
 - The checked-in `terraform.tfvars` files only contain sample non-secret configuration values.
 - If your organization wants those values hidden too, replace them with Azure DevOps variables or variable groups and pass them as `TF_VAR_application_name`, `TF_VAR_environment_name`, and `TF_VAR_location`.
+
+
+get fucked
