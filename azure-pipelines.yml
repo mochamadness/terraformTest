@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-    - master
+    - main
     - refs/tags/*
 
 resources:
@@ -10,7 +10,7 @@ resources:
     type: github
     endpoint: github.com_mochamadness_oauth
     name: mochamadness/WcfService1
-    ref: main
+    ref: master
 
 pool:
   vmImage: ubuntu-latest
