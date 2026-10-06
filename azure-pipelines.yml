@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-    - main
+    - master
     - refs/tags/*
 
 resources:
@@ -9,7 +9,7 @@ resources:
   - repository: ReleaseRepo
     type: github
     endpoint: github.com_mochamadness_oauth
-    name: mochamadness/test-release
+    name: mochamadness/WcfService1
     ref: main
 
 pool:
